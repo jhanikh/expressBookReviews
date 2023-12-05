@@ -7,37 +7,146 @@ const public_users = express.Router();
 
 public_users.post("/register", (req,res) => {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  const username = req.body.username;
+  const password = req.body.password;
+
+  if (username && password) {
+    if (!isValid(username)) { 
+      users.push({"username":username,"password":password});
+      return res.status(200).json({message: "User successfully registred. Now you can login"});
+    } else {
+      return res.status(404).json({message: "User already exists!"});    
+    }
+  } 
+  return res.status(404).json({message: "Unable to register user."});
 });
 
-// Get the book list available in the shop
-public_users.get('/',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
-});
 
-// Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
- });
+//Get the book list available in the shop - using Promise Callback
+public_users.get('/', (req, res) => {
+    getBooks()
+      .then(booksList => res.json(booksList))
+      .catch(error => {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred' });
+      });
+  });
   
-// Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
-});
+  function getBooks() {
+    return new Promise((resolve, reject) => {
+      // Simulate an asynchronous process
+      process.nextTick(() => {
+        try {
+          const booksList = Object.values(books);
+          resolve(booksList);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+  }
 
-// Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
-});
+//Get book details based on ISBN - using Promise Callback.
+public_users.get('/isbn/:isbn', (req, res) => {
+    const myIsbn = req.params.isbn;
+    
+    getBookDetails(myIsbn)
+      .then(book => {
+        if (book) {
+          res.json(book);
+        } else {
+          res.status(404).json({ error: 'Book not found' });
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        res.status(500).json({ error: 'An error occurred' });
+      });
+  });
+  
+  function getBookDetails(key) {
+    return new Promise((resolve, reject) => {
+      process.nextTick(() => {
+        try {
+          const book = books[key];
+          resolve(book);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+  }
+
+
+// Get book details based on author - using Promise Callback 
+public_users.get('/author/:author', (req, res) => {
+    const author = req.params.author;
+  
+    getBookDetailsByAuthor(author, (error, book) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'An error occurred' });
+      }
+  
+      if (book) {
+        res.json(book);
+      } else {
+        res.status(404).json({ error: 'Book not found' });
+      }
+    });
+  });
+  
+  function getBookDetailsByAuthor(author, callback) {
+    process.nextTick(() => {
+      try {
+        const book = Object.values(books).find(book => book.author === author);
+        callback(null, book);
+      } catch (error) {
+        callback(error, null);
+      }
+    });
+  }
+
+
+
+// Get book details based on title - using Promise Callback
+public_users.get('/title/:title', (req, res) => {
+    const title = req.params.title;
+  
+    getBookDetailsByTitle(title, (error, book) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'An error occurred' });
+      }
+  
+      if (book) {
+        res.json(book);
+      } else {
+        res.status(404).json({ error: 'Book not found' });
+      }
+    });
+  });
+  
+  function getBookDetailsByTitle(title, callback) {
+    process.nextTick(() => {
+      try {
+        const book = Object.values(books).find(book => book.title === title);
+        callback(null, book);
+      } catch (error) {
+        callback(error, null);
+      }
+    });
+  }
 
 //  Get book review
 public_users.get('/review/:isbn',function (req, res) {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  const ISBN = parseInt(req.params.isbn) - 1;
+  let bookDetails3 = Object.values(books)
+  the_review = (bookDetails3[ISBN]);
+  console.log(the_review);
+
+  res.send(the_review.reviews);
 });
 
 module.exports.general = public_users;
